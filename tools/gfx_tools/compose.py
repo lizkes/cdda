@@ -101,6 +101,7 @@ class Tileset:
     '''
     Referenced sprites memory and handling, tile entries conversion
     '''
+
     def __init__(self, source_dir: str, output_dir: str) -> None:
         self.source_dir = source_dir
         self.output_dir = output_dir
@@ -173,6 +174,7 @@ class Tilesheet:
     '''
     Tilesheet reading and compositing
     '''
+
     def __init__(
             self,
             tileset: Tileset,

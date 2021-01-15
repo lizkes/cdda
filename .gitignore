@@ -12,7 +12,6 @@
 /build/
 /build-start-time
 /cmake-build-debug/
-/config/
 /data/*.template
 /data/mods/user-default-mods.json
 /dep/

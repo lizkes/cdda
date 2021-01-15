@@ -40,13 +40,14 @@ class string_input_popup;
 class ui_adaptor;
 struct input_event;
 
-catacurses::window new_centered_win( int nlines, int ncols );
+catacurses::window new_centered_win(int nlines, int ncols);
 
 /**
  * mvwzstr: line of text with horizontal offset and color
  */
 
-struct mvwzstr {
+struct mvwzstr
+{
     int left = 0;
     nc_color color = c_unset;
     std::string txt;
@@ -56,16 +57,17 @@ struct mvwzstr {
 /**
  * uilist_entry: entry line for uilist
  */
-struct uilist_entry {
-    int retval;                 // return this int
-    bool enabled;               // darken, and forbid scrolling if hilight_disabled is false
-    bool force_color = false;   // Never darken this option
+struct uilist_entry
+{
+    int retval;               // return this int
+    bool enabled;             // darken, and forbid scrolling if hilight_disabled is false
+    bool force_color = false; // Never darken this option
     // cata::nullopt: automatically assign an unassigned hotkey
     // input_event(): disable hotkey
     cata::optional<input_event> hotkey;
-    std::string txt;            // what it says on the tin
-    std::string desc;           // optional, possibly longer, description
-    std::string ctxt;           // second column text
+    std::string txt;  // what it says on the tin
+    std::string desc; // optional, possibly longer, description
+    std::string ctxt; // second column text
     nc_color hotkey_color;
     nc_color text_color;
     mvwzstr extratxt;
@@ -73,26 +75,26 @@ struct uilist_entry {
     // In the following constructors, int K only support letters (a-z, A-Z) and
     // digits (0-9), MENU_AUTOASSIGN, and 0 or ' ' (disable hotkey). Other
     // values may not work under keycode mode.
-    uilist_entry( const std::string &T );
-    uilist_entry( const std::string &T, const std::string &D );
-    uilist_entry( const std::string &T, int K );
-    uilist_entry( const std::string &T, const cata::optional<input_event> &K );
-    uilist_entry( int R, bool E, int K, const std::string &T );
-    uilist_entry( int R, bool E, const cata::optional<input_event> &K,
-                  const std::string &T );
-    uilist_entry( int R, bool E, int K, const std::string &T, const std::string &D );
-    uilist_entry( int R, bool E, int K, const std::string &T, const std::string &D,
-                  const std::string &C );
-    uilist_entry( int R, bool E, const cata::optional<input_event> &K,
-                  const std::string &T, const std::string &D,
-                  const std::string &C );
-    uilist_entry( int R, bool E, int K, const std::string &T,
-                  const nc_color &H, const nc_color &C );
-    template<typename Enum, typename... Args,
-             typename = std::enable_if_t<std::is_enum<Enum>::value>>
-    uilist_entry( Enum e, Args && ... args ) :
-        uilist_entry( static_cast<int>( e ), std::forward<Args>( args )... )
-    {}
+    uilist_entry(const std::string &T);
+    uilist_entry(const std::string &T, const std::string &D);
+    uilist_entry(const std::string &T, int K);
+    uilist_entry(const std::string &T, const cata::optional<input_event> &K);
+    uilist_entry(int R, bool E, int K, const std::string &T);
+    uilist_entry(int R, bool E, const cata::optional<input_event> &K,
+                 const std::string &T);
+    uilist_entry(int R, bool E, int K, const std::string &T, const std::string &D);
+    uilist_entry(int R, bool E, int K, const std::string &T, const std::string &D,
+                 const std::string &C);
+    uilist_entry(int R, bool E, const cata::optional<input_event> &K,
+                 const std::string &T, const std::string &D,
+                 const std::string &C);
+    uilist_entry(int R, bool E, int K, const std::string &T,
+                 const nc_color &H, const nc_color &C);
+    template <typename Enum, typename... Args,
+              typename = std::enable_if_t<std::is_enum<Enum>::value>>
+    uilist_entry(Enum e, Args &&... args) : uilist_entry(static_cast<int>(e), std::forward<Args>(args)...)
+    {
+    }
 
     inclusive_rectangle<point> drawn_rect;
 };
@@ -137,18 +139,18 @@ class uilist;
 */
 class uilist_callback
 {
-    public:
-
-        /**
+public:
+    /**
         * After a new item is selected, call this once
         */
-        virtual void select( uilist * ) {}
-        virtual bool key( const input_context &, const input_event &/*key*/, int /*entnum*/,
-                          uilist * ) {
-            return false;
-        }
-        virtual void refresh( uilist * ) {}
-        virtual ~uilist_callback() = default;
+    virtual void select(uilist *) {}
+    virtual bool key(const input_context &, const input_event & /*key*/, int /*entnum*/,
+                     uilist *)
+    {
+        return false;
+    }
+    virtual void refresh(uilist *) {}
+    virtual ~uilist_callback() = default;
 };
 /*@}*/
 /**
@@ -157,204 +159,207 @@ class uilist_callback
 
 class uilist // NOLINT(cata-xy)
 {
+public:
+    class size_scalar
+    {
     public:
-        class size_scalar
+        struct auto_assign
         {
-            public:
-                struct auto_assign {
-                };
-
-                size_scalar &operator=( auto_assign );
-                size_scalar &operator=( int val );
-                size_scalar &operator=( const std::function<int()> &fun );
-
-                friend class uilist;
-
-            private:
-                std::function<int()> fun;
         };
 
-        class pos_scalar
+        size_scalar &operator=(auto_assign);
+        size_scalar &operator=(int val);
+        size_scalar &operator=(const std::function<int()> &fun);
+
+        friend class uilist;
+
+    private:
+        std::function<int()> fun;
+    };
+
+    class pos_scalar
+    {
+    public:
+        struct auto_assign
         {
-            public:
-                struct auto_assign {
-                };
-
-                pos_scalar &operator=( auto_assign );
-                pos_scalar &operator=( int val );
-                // the parameter to the function is the corresponding size vector element
-                // (width for x, height for y)
-                pos_scalar &operator=( const std::function<int( int )> &fun );
-
-                friend class uilist;
-
-            private:
-                std::function<int( int )> fun;
         };
 
-        uilist();
-        // query() will be called at the end of these convenience constructors
-        uilist( const std::string &msg, const std::vector<uilist_entry> &opts );
-        uilist( const std::string &msg, const std::vector<std::string> &opts );
-        uilist( const std::string &msg, std::initializer_list<const char *const> opts );
+        pos_scalar &operator=(auto_assign);
+        pos_scalar &operator=(int val);
+        // the parameter to the function is the corresponding size vector element
+        // (width for x, height for y)
+        pos_scalar &operator=(const std::function<int(int)> &fun);
 
-        ~uilist();
-
-        // whether to report invalid color tag with debug message.
-        void color_error( bool report );
-
-        void init();
-        void setup();
-        // initialize the window or reposition it after screen size change.
-        void reposition( ui_adaptor &ui );
-        void show();
-        bool scrollby( int scrollby );
-        void query( bool loop = true, int timeout = -1 );
-        void filterlist();
-        // In add_entry/add_entry_desc/add_entry_col, int k only support letters
-        // (a-z, A-Z) and digits (0-9), MENU_AUTOASSIGN, and 0 or ' ' (disable
-        // hotkey). Other values may not work under keycode mode.
-        void addentry( const std::string &str );
-        void addentry( int r, bool e, int k, const std::string &str );
-        void addentry( int r, bool e, const cata::optional<input_event> &k,
-                       const std::string &str );
-        template<typename K, typename ...Args>
-        void addentry( const int r, const bool e, K &&k, const char *const format, Args &&... args ) {
-            return addentry( r, e, std::forward<K>( k ),
-                             string_format( format, std::forward<Args>( args )... ) );
-        }
-        void addentry_desc( const std::string &str, const std::string &desc );
-        void addentry_desc( int r, bool e, int k, const std::string &str, const std::string &desc );
-        void addentry_col( int r, bool e, int k, const std::string &str, const std::string &column,
-                           const std::string &desc = "" );
-        void addentry_col( int r, bool e, const cata::optional<input_event> &k,
-                           const std::string &str, const std::string &column,
-                           const std::string &desc = std::string() );
-        void settext( const std::string &str );
-
-        void reset();
-
-        // Can be called before `uilist::query` to keep the uilist on UI stack after
-        // `uilist::query` returns. The returned `ui_adaptor` is cleared when the
-        // `uilist` is deconstructed.
-        //
-        // Example:
-        //     shared_ptr_fast<ui_adaptor> ui = menu.create_or_get_ui_adaptor();
-        //     menu.query()
-        //     // before `ui` or `menu` is deconstructed, the menu will always be
-        //     // displayed on screen.
-        shared_ptr_fast<ui_adaptor> create_or_get_ui_adaptor();
-
-        operator int() const;
+        friend class uilist;
 
     private:
-        int scroll_amount_from_action( const std::string &action );
-        void apply_scrollbar();
-        // This function assumes it's being called from `query` and should
-        // not be made public.
-        void inputfilter();
+        std::function<int(int)> fun;
+    };
 
-    public:
-        // Parameters
-        // TODO change to setters
-        std::string title;
-        std::string text;
-        // basically the same as desc, except it doesn't change based on selection
-        std::string footer_text;
-        std::vector<uilist_entry> entries;
+    uilist();
+    // query() will be called at the end of these convenience constructors
+    uilist(const std::string &msg, const std::vector<uilist_entry> &opts);
+    uilist(const std::string &msg, const std::vector<std::string> &opts);
+    uilist(const std::string &msg, std::initializer_list<const char *const> opts);
 
-        std::string input_category;
-        std::vector<std::pair<std::string, translation>> additional_actions;
+    ~uilist();
 
-        nc_color border_color;
-        nc_color text_color;
-        nc_color title_color;
-        nc_color hilight_color;
-        nc_color hotkey_color;
-        nc_color disabled_color;
+    // whether to report invalid color tag with debug message.
+    void color_error(bool report);
 
-        uilist_callback *callback;
+    void init();
+    void setup();
+    // initialize the window or reposition it after screen size change.
+    void reposition(ui_adaptor &ui);
+    void show();
+    bool scrollby(int scrollby);
+    void query(bool loop = true, int timeout = -1);
+    void filterlist();
+    // In add_entry/add_entry_desc/add_entry_col, int k only support letters
+    // (a-z, A-Z) and digits (0-9), MENU_AUTOASSIGN, and 0 or ' ' (disable
+    // hotkey). Other values may not work under keycode mode.
+    void addentry(const std::string &str);
+    void addentry(int r, bool e, int k, const std::string &str);
+    void addentry(int r, bool e, const cata::optional<input_event> &k,
+                  const std::string &str);
+    template <typename K, typename... Args>
+    void addentry(const int r, const bool e, K &&k, const char *const format, Args &&... args)
+    {
+        return addentry(r, e, std::forward<K>(k),
+                        string_format(format, std::forward<Args>(args)...));
+    }
+    void addentry_desc(const std::string &str, const std::string &desc);
+    void addentry_desc(int r, bool e, int k, const std::string &str, const std::string &desc);
+    void addentry_col(int r, bool e, int k, const std::string &str, const std::string &column,
+                      const std::string &desc = "");
+    void addentry_col(int r, bool e, const cata::optional<input_event> &k,
+                      const std::string &str, const std::string &column,
+                      const std::string &desc = std::string());
+    void settext(const std::string &str);
 
-        pos_scalar w_x_setup;
-        pos_scalar w_y_setup;
-        size_scalar w_width_setup;
-        size_scalar w_height_setup;
+    void reset();
 
-        int textwidth = 0;
+    // Can be called before `uilist::query` to keep the uilist on UI stack after
+    // `uilist::query` returns. The returned `ui_adaptor` is cleared when the
+    // `uilist` is deconstructed.
+    //
+    // Example:
+    //     shared_ptr_fast<ui_adaptor> ui = menu.create_or_get_ui_adaptor();
+    //     menu.query()
+    //     // before `ui` or `menu` is deconstructed, the menu will always be
+    //     // displayed on screen.
+    shared_ptr_fast<ui_adaptor> create_or_get_ui_adaptor();
 
-        size_scalar pad_left_setup;
-        size_scalar pad_right_setup;
+    operator int() const;
 
-        // Maximum number of lines to be allocated for displaying descriptions.
-        // This only serves as a hint, not a hard limit, so the number of lines
-        // may still exceed this value when for example the description text is
-        // long enough.
-        int desc_lines_hint = 0;
-        bool desc_enabled = false;
+private:
+    int scroll_amount_from_action(const std::string &action);
+    void apply_scrollbar();
+    // This function assumes it's being called from `query` and should
+    // not be made public.
+    void inputfilter();
 
-        bool filtering = false;
-        bool filtering_nocase = false;
+public:
+    // Parameters
+    // TODO change to setters
+    std::string title;
+    std::string text;
+    // basically the same as desc, except it doesn't change based on selection
+    std::string footer_text;
+    std::vector<uilist_entry> entries;
 
-        // return on selecting disabled entry, default false
-        bool allow_disabled = false;
-        // return UILIST_UNBOUND on keys unbound & unhandled by callback, default false
-        bool allow_anykey = false;
-        // return UILIST_CANCEL on "QUIT" action, default true
-        bool allow_cancel = true;
-        // return UILIST_ADDITIONAL if the input action is inside `additional_actions`
-        // and unhandled by callback, default false.
-        bool allow_additional = false;
-        bool hilight_disabled = false;
+    std::string input_category;
+    std::vector<std::pair<std::string, translation>> additional_actions;
 
-    private:
-        report_color_error _color_error = report_color_error::yes;
+    nc_color border_color;
+    nc_color text_color;
+    nc_color title_color;
+    nc_color hilight_color;
+    nc_color hotkey_color;
+    nc_color disabled_color;
 
-    public:
-        // Iternal states
-        // TODO make private
-        std::vector<std::string> textformatted;
+    uilist_callback *callback;
 
-        catacurses::window window;
-        int w_x = 0;
-        int w_y = 0;
-        int w_width = 0;
-        int w_height = 0;
+    pos_scalar w_x_setup;
+    pos_scalar w_y_setup;
+    size_scalar w_width_setup;
+    size_scalar w_height_setup;
 
-        int pad_left = 0;
-        int pad_right = 0;
+    int textwidth = 0;
 
-        int vshift = 0;
+    size_scalar pad_left_setup;
+    size_scalar pad_right_setup;
 
-        int fselected = 0;
+    // Maximum number of lines to be allocated for displaying descriptions.
+    // This only serves as a hint, not a hard limit, so the number of lines
+    // may still exceed this value when for example the description text is
+    // long enough.
+    int desc_lines_hint = 0;
+    bool desc_enabled = false;
 
-    private:
-        std::vector<int> fentries;
-        std::map<input_event, int, std::function<bool( const input_event &, const input_event & )>>
-        keymap { input_event::compare_type_mod_code };
+    bool filtering = false;
+    bool filtering_nocase = false;
 
-        weak_ptr_fast<ui_adaptor> ui;
+    // return on selecting disabled entry, default false
+    bool allow_disabled = false;
+    // return UILIST_UNBOUND on keys unbound & unhandled by callback, default false
+    bool allow_anykey = false;
+    // return UILIST_CANCEL on "QUIT" action, default true
+    bool allow_cancel = true;
+    // return UILIST_ADDITIONAL if the input action is inside `additional_actions`
+    // and unhandled by callback, default false.
+    bool allow_additional = false;
+    bool hilight_disabled = false;
 
-        std::unique_ptr<string_input_popup> filter_popup;
-        std::string filter;
+private:
+    report_color_error _color_error = report_color_error::yes;
 
-        int max_entry_len = 0;
-        int max_column_len = 0;
+public:
+    // Iternal states
+    // TODO make private
+    std::vector<std::string> textformatted;
 
-        int vmax = 0;
+    catacurses::window window;
+    int w_x = 0;
+    int w_y = 0;
+    int w_width = 0;
+    int w_height = 0;
 
-        int desc_lines = 0;
+    int pad_left = 0;
+    int pad_right = 0;
 
-        bool started = false;
+    int vshift = 0;
 
-        uilist_entry *find_entry_by_coordinate( const point &p );
+    int fselected = 0;
 
-    public:
-        // Results
-        // TODO change to getters
-        std::string ret_act;
-        input_event ret_evt;
-        int ret = 0;
-        int selected = 0;
+private:
+    std::vector<int> fentries;
+    std::map<input_event, int, std::function<bool(const input_event &, const input_event &)>>
+        keymap{input_event::compare_type_mod_code};
+
+    weak_ptr_fast<ui_adaptor> ui;
+
+    std::unique_ptr<string_input_popup> filter_popup;
+    std::string filter;
+
+    int max_entry_len = 0;
+    int max_column_len = 0;
+
+    int vmax = 0;
+
+    int desc_lines = 0;
+
+    bool started = false;
+
+    uilist_entry *find_entry_by_coordinate(const point &p);
+
+public:
+    // Results
+    // TODO change to getters
+    std::string ret_act;
+    input_event ret_evt;
+    int ret = 0;
+    int selected = 0;
 };
 
 /**
@@ -363,14 +368,15 @@ class uilist // NOLINT(cata-xy)
  */
 class pointmenu_cb : public uilist_callback
 {
-    private:
-        struct impl_t;
+private:
+    struct impl_t;
 
-        pimpl<impl_t> impl;
-    public:
-        pointmenu_cb( const std::vector< tripoint > &pts );
-        ~pointmenu_cb() override;
-        void select( uilist *menu ) override;
+    pimpl<impl_t> impl;
+
+public:
+    pointmenu_cb(const std::vector<tripoint> &pts);
+    ~pointmenu_cb() override;
+    void select(uilist *menu) override;
 };
 
 #endif // CATA_SRC_UI_H

@@ -95,7 +95,7 @@
 # RELEASE_FLAGS is flags for release builds.
 RELEASE_FLAGS =
 WARNINGS = \
-  -Werror -Wall -Wextra \
+  -Wall -Wextra \
   -Wformat-signedness \
   -Wlogical-op \
   -Wmissing-declarations \
@@ -136,7 +136,7 @@ export CCACHE_COMMENTS=1
 # Explicitly let 'char' to be 'signed char' to fix #18776
 OTHERS += -fsigned-char
 
-VERSION = 0.E
+VERSION = lizkes-b11360-pure
 
 TARGET_NAME = cataclysm
 TILES_TARGET_NAME = $(TARGET_NAME)-tiles
@@ -424,12 +424,11 @@ endif
 CXXFLAGS += $(WARNINGS) $(DEBUG) $(DEBUGSYMS) $(PROFILE) $(OTHERS) -MMD -MP
 TOOL_CXXFLAGS = -DCATA_IN_TOOL
 
-BINDIST_EXTRAS += README.md data doc LICENSE.txt LICENSE-OFL-Terminus-Font.txt VERSION.txt $(JSON_FORMATTER_BIN)
-BINDIST    = $(BUILD_PREFIX)cataclysmdda-$(VERSION).tar.gz
-W32BINDIST = $(BUILD_PREFIX)cataclysmdda-$(VERSION).zip
+BINDIST_EXTRAS += data config
+BINDIST    = $(BUILD_PREFIX)cdda-$(VERSION).tar.gz
+W32BINDIST = $(BUILD_PREFIX)cdda-$(VERSION).7z
 BINDIST_CMD    = tar --transform=s@^$(BINDIST_DIR)@cataclysmdda-$(VERSION)@ -czvf $(BINDIST) $(BINDIST_DIR)
-W32BINDIST_CMD = cd $(BINDIST_DIR) && zip -r ../$(W32BINDIST) * && cd $(BUILD_DIR)
-
+W32BINDIST_CMD = cd $(BINDIST_DIR) && rm -f ../../$(W32BINDIST) && 7z a -t7z -mx=9 -r  ../../$(W32BINDIST) * && cd $(BUILD_DIR)
 
 # Check if called without a special build target
 ifeq ($(NATIVE),)
@@ -900,7 +899,6 @@ $(BUILD_PREFIX)$(TARGET_NAME).a: $(OBJS)
 .PHONY: version
 version:
 	@( VERSION_STRING=$(VERSION) ; \
-            [ -e ".git" ] && GITVERSION=$$( git describe --tags --always --dirty --match "[0-9A-Z]*.[0-9A-Z]*" ) && VERSION_STRING=$$GITVERSION ; \
             [ -e "$(SRC_DIR)/version.h" ] && OLDVERSION=$$(grep VERSION $(SRC_DIR)/version.h|cut -d '"' -f2) ; \
             if [ "x$$VERSION_STRING" != "x$$OLDVERSION" ]; then printf '// NOLINT(cata-header-guard)\n#define VERSION "%s"\n' "$$VERSION_STRING" | tee $(SRC_DIR)/version.h ; fi \
          )
@@ -931,7 +929,7 @@ clean: clean-tests clean-object_creator
 	rm -rf *$(TARGET_NAME) *$(TILES_TARGET_NAME)
 	rm -rf *$(TILES_TARGET_NAME).exe *$(TARGET_NAME).exe *$(TARGET_NAME).a
 	rm -rf *obj *objwin
-	rm -rf *$(BINDIST_DIR) *cataclysmdda-*.tar.gz *cataclysmdda-*.zip
+	rm -rf *$(BINDIST_DIR) *cataclysmdda-*.tar.gz *cataclysmdda-*.7z
 	rm -f $(SRC_DIR)/version.h
 	rm -f $(CHKJSON_BIN)
 	rm -f pch/*pch.hpp.gch
@@ -1114,7 +1112,8 @@ endif  # ifeq ($(NATIVE), osx)
 
 $(BINDIST): distclean version $(TARGET) $(L10N) $(BINDIST_EXTRAS) $(BINDIST_LOCALE)
 	mkdir -p $(BINDIST_DIR)
-	cp -R $(TARGET) $(BINDIST_EXTRAS) $(BINDIST_DIR)
+	mv $(TARGET) $(BINDIST_DIR)
+	cp -R --parents $(BINDIST_EXTRAS) $(BINDIST_DIR)
 ifdef LANGUAGES
 	cp -R --parents lang/mo $(BINDIST_DIR)
 endif
