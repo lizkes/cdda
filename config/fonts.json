@@ -1,0 +1,5 @@
+{
+  "typeface": [ "data/font/03.ttf", "data/font/Terminus.ttf", "data/font/unifont.ttf", "data/font/unifont.ttf" ],
+  "map_typeface": [ "data/font/02.ttf", "data/font/Terminus.ttf", "data/font/unifont.ttf", "data/font/unifont.ttf" ],
+  "overmap_typeface": [ "data/font/02-1.ttf", "data/font/Terminus.ttf", "data/font/unifont.ttf", "data/font/unifont.ttf" ]
+}
