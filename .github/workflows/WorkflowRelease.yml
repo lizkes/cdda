@@ -13,6 +13,10 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+            - name: Setup timezone
+              uses: zcong1993/setup-timezone@master
+              with:
+                  timezone: Asia/Shanghai
             - name: Install MXE
               run: sudo bash install_mxe.sh
               working-directory: ./win64

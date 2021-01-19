@@ -10,6 +10,10 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+            - name: Setup timezone
+              uses: zcong1993/setup-timezone@master
+              with:
+                  timezone: Asia/Shanghai
             - name: Read VERSION file
               id: get_version
               run: echo "::set-output name=version::$(cat VERSION)"
