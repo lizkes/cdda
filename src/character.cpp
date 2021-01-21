@@ -2721,11 +2721,12 @@ void Character::practice(const skill_id &id, int amount, int cap, bool suppress_
             handle_skill_warning(id, false);
         }
     }
-    if (amount > 0 && level.isTraining())
-    {
-        int oldLevel = get_skill_level(id);
-        get_skill_level_object(id).train(amount);
-        int newLevel = get_skill_level(id);
+    if( amount > 0 && level.isTraining() ) {
+        int focus_drain_cap = std::sqrt( focus_pool * 1000 );
+        amount = std::min( amount, focus_drain_cap );
+        int oldLevel = get_skill_level( id );
+        get_skill_level_object( id ).train( amount );
+        int newLevel = get_skill_level( id );
         std::string skill_name = skill.name();
         if (newLevel > oldLevel)
         {
@@ -2742,15 +2743,18 @@ void Character::practice(const skill_id &id, int amount, int cap, bool suppress_
                     skill_name);
         }
 
-        int chance_to_drop = focus_pool;
-        focus_pool -= chance_to_drop / 100;
         // Apex Predators don't think about much other than killing.
         // They don't lose Focus when practicing combat skills.
-        if ((rng(1, 100) <= (chance_to_drop % 100)) && (!(has_trait_flag("PRED4") &&
-                                                          skill.is_combat_skill())))
-        {
-            focus_pool--;
+        if( !( has_trait_flag( "PRED4" ) && skill.is_combat_skill() ) ) {
+            // Base reduction on the larger of 1% of total, or practice amount.
+            // The latter kicks in when long actions like crafting
+            // apply many turns of gains at once.
+            int focus_drain = std::max( focus_pool / 100, amount );
+            // The purpose of having this squared is that it makes focus drain dramatically slower
+            // as it approaches zero.
+            focus_pool -= ( focus_drain * focus_drain ) / 1000;
         }
+        focus_pool = std::max( focus_pool, 0 );
     }
 
     get_skill_level_object(id).practice();
@@ -6870,8 +6874,8 @@ void Character::update_needs(int rate_multiplier)
                 as_npc.complain_about("cramped_vehicle", 1_hours, "<cramped_vehicle>", false);
             }
 
-            mod_pain(rng(4, 6));
-            focus_pool -= 1;
+            mod_pain( rng( 4, 6 ) );
+            mod_focus( -1 );
         }
     }
 }
@@ -13642,9 +13646,8 @@ bool Character::has_opposite_trait(const trait_id &flag) const
 
 int Character::adjust_for_focus(int amount) const
 {
-    int effective_focus = focus_pool;
-    if (has_trait(trait_FASTLEARNER))
-    {
+    int effective_focus = get_focus();
+    if( has_trait( trait_FASTLEARNER ) ) {
         effective_focus += 15;
     }
     if (has_active_bionic(bio_memory))
@@ -13655,10 +13658,10 @@ int Character::adjust_for_focus(int amount) const
     {
         effective_focus -= 15;
     }
-    effective_focus += (get_int() - get_option<int>("INT_BASED_LEARNING_BASE_VALUE")) *
-                       get_option<int>("INT_BASED_LEARNING_FOCUS_ADJUSTMENT");
-    double tmp = amount * (effective_focus / 100.0);
-    return roll_remainder(tmp);
+    effective_focus += ( get_int() - get_option<int>( "INT_BASED_LEARNING_BASE_VALUE" ) ) *
+                       get_option<int>( "INT_BASED_LEARNING_FOCUS_ADJUSTMENT" );
+    effective_focus = std::max( effective_focus, 1 );
+    return effective_focus * std::min( amount, 1000 );
 }
 
 std::set<tripoint> Character::get_path_avoid() const
@@ -14949,11 +14952,11 @@ std::vector<display_proficiency> Character::display_proficiencies() const
 void Character::practice_proficiency(const proficiency_id &prof, const time_duration &amount,
                                      const cata::optional<time_duration> &max)
 {
-    int amt = to_seconds<int>(amount);
-    const float pct_before = _proficiencies->pct_practiced(prof);
-    time_duration focused_amount = time_duration::from_seconds(adjust_for_focus(amt));
-    const bool learned = _proficiencies->practice(prof, focused_amount, max);
-    const float pct_after = _proficiencies->pct_practiced(prof);
+    int amt = to_seconds<int>( amount );
+    const float pct_before = _proficiencies->pct_practiced( prof );
+    time_duration focused_amount = time_duration::from_seconds( adjust_for_focus( amt ) / 100 );
+    const bool learned = _proficiencies->practice( prof, focused_amount, max );
+    const float pct_after = _proficiencies->pct_practiced( prof );
 
     if (pct_after > pct_before)
     {

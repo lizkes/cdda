@@ -1991,77 +1991,89 @@ public:
     /** Returns true if the player has crossed a mutation threshold
          *  Player can only cross one mutation threshold.
          */
-    bool crossed_threshold() const;
+        bool crossed_threshold() const;
 
-    // --------------- Values ---------------
-    std::string name;
-    bool male = false;
+        // --------------- Values ---------------
+        std::string name;
+        bool male = false;
 
-    std::list<item> worn;
-    bool nv_cached = false;
-    // Means player sit inside vehicle on the tile he is now
-    bool in_vehicle = false;
-    bool hauling = false;
+        std::list<item> worn;
+        bool nv_cached = false;
+        // Means player sit inside vehicle on the tile he is now
+        bool in_vehicle = false;
+        bool hauling = false;
 
-    player_activity stashed_outbounds_activity;
-    player_activity stashed_outbounds_backlog;
-    player_activity activity;
-    std::list<player_activity> backlog;
-    cata::optional<tripoint> destination_point;
-    pimpl<inventory> inv;
-    itype_id last_item;
-    item weapon;
+        player_activity stashed_outbounds_activity;
+        player_activity stashed_outbounds_backlog;
+        player_activity activity;
+        std::list<player_activity> backlog;
+        cata::optional<tripoint> destination_point;
+        pimpl<inventory> inv;
+        itype_id last_item;
+        item weapon;
 
-    int scent = 0;
-    pimpl<bionic_collection> my_bionics;
-    pimpl<character_martial_arts> martial_arts_data;
+        int scent = 0;
+        pimpl<bionic_collection> my_bionics;
+        pimpl<character_martial_arts> martial_arts_data;
 
-    stomach_contents stomach;
-    stomach_contents guts;
-    std::list<consumption_event> consumption_history;
+        stomach_contents stomach;
+        stomach_contents guts;
+        std::list<consumption_event> consumption_history;
 
-    int oxygen = 0;
-    int slow_rad = 0;
-    blood_type my_blood_type;
-    bool blood_rh_factor = false;
-    // Randomizes characters' blood type and Rh
-    void randomize_blood();
+        int oxygen = 0;
+        int slow_rad = 0;
+        blood_type my_blood_type;
+        bool blood_rh_factor = false;
+        // Randomizes characters' blood type and Rh
+        void randomize_blood();
 
-    int focus_pool = 0;
-    int cash = 0;
-    std::set<character_id> follower_ids;
-    weak_ptr_fast<Creature> last_target;
-    cata::optional<tripoint> last_target_pos;
-    // Save favorite ammo location
-    item_location ammo_location;
-    std::set<tripoint_abs_omt> camps;
-    /* crafting inventory cached time */
-    time_point cached_time;
+        int get_focus() const {
+            return std::max( 1, focus_pool / 1000 );
+        }
+        void mod_focus( int amount ) {
+            focus_pool += amount * 1000;
+        }
+        // Set the focus pool directly, only use for debugging.
+        void set_focus( int amount ) {
+            focus_pool = amount * 1000;
+        }
+    protected:
+        int focus_pool = 0;
+    public:
+        int cash = 0;
+        std::set<character_id> follower_ids;
+        weak_ptr_fast<Creature> last_target;
+        cata::optional<tripoint> last_target_pos;
+        // Save favorite ammo location
+        item_location ammo_location;
+        std::set<tripoint_abs_omt> camps;
+        /* crafting inventory cached time */
+        time_point cached_time;
 
-    std::vector<addiction> addictions;
-    /** Adds an addiction to the player */
-    void add_addiction(add_type type, int strength);
-    /** Removes an addition from the player */
-    void rem_addiction(add_type type);
-    /** Returns true if the player has an addiction of the specified type */
-    bool has_addiction(add_type type) const;
-    /** Returns the intensity of the specified addiction */
-    int addiction_level(add_type type) const;
+        std::vector <addiction> addictions;
+        /** Adds an addiction to the player */
+        void add_addiction( add_type type, int strength );
+        /** Removes an addition from the player */
+        void rem_addiction( add_type type );
+        /** Returns true if the player has an addiction of the specified type */
+        bool has_addiction( add_type type ) const;
+        /** Returns the intensity of the specified addiction */
+        int addiction_level( add_type type ) const;
 
-    shared_ptr_fast<monster> mounted_creature;
-    // for loading NPC mounts
-    int mounted_creature_id = 0;
-    // for vehicle work
-    int activity_vehicle_part_index = -1;
+        shared_ptr_fast<monster> mounted_creature;
+        // for loading NPC mounts
+        int mounted_creature_id = 0;
+        // for vehicle work
+        int activity_vehicle_part_index = -1;
 
-    // Hauling items on the ground
-    void start_hauling();
-    void stop_hauling();
-    bool is_hauling() const;
+        // Hauling items on the ground
+        void start_hauling();
+        void stop_hauling();
+        bool is_hauling() const;
 
-    // Has a weapon, inventory item or worn item with flag
-    bool has_item_with_flag(const flag_id &flag, bool need_charges = false) const;
-    /**
+        // Has a weapon, inventory item or worn item with flag
+        bool has_item_with_flag( const flag_id &flag, bool need_charges = false ) const;
+        /**
          * All items that have the given flag (@ref item::has_flag).
          */
     std::vector<const item *> all_items_with_flag(const flag_id &flag) const;
@@ -2606,11 +2618,12 @@ public:
          * @param craft the currently in progress craft
          * @return if the craft can be continued
          */
-    bool can_continue_craft(item &craft);
-    /** Returns nearby NPCs ready and willing to help with crafting. */
-    std::vector<npc *> get_crafting_helpers() const;
-    int get_num_crafting_helpers(int max) const;
-    /**
+        bool can_continue_craft( item &craft );
+        bool can_continue_craft( item &craft, const requirement_data &continue_reqs );
+        /** Returns nearby NPCs ready and willing to help with crafting. */
+        std::vector<npc *> get_crafting_helpers() const;
+        int get_num_crafting_helpers( int max ) const;
+        /**
          * Handle skill gain for player and followers during crafting
          * @param craft the currently in progress craft
          * @param multiplier what factor to multiply the base skill gain by.  This is used to apply

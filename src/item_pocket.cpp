@@ -1006,65 +1006,54 @@ void item_pocket::general_info(std::vector<iteminfo> &info, int pocket_number,
     if (data->max_item_length != 0_mm)
     {
         info.back().bNewLine = true;
-        info.push_back(iteminfo("BASE", _("Maximum item length: "),
-                                string_format("<num> %s", length_units(data->max_item_length)),
-                                iteminfo::lower_is_better,
-                                convert_length(data->max_item_length)));
+        info.push_back( iteminfo( "BASE", _( "Maximum item length: " ),
+                                  string_format( "<num> %s", length_units( data->max_item_length ) ),
+                                  iteminfo::lower_is_better,
+                                  convert_length( data->max_item_length ) ) );
     }
 
-    if (data->min_item_volume > 0_ml)
-    {
-        info.emplace_back("DESCRIPTION",
-                          string_format(_("Minimum item volume: <neutral>%s</neutral>"),
-                                        vol_to_string(data->min_item_volume)));
+    if( data->min_item_volume > 0_ml ) {
+        info.emplace_back( "DESCRIPTION",
+                           string_format( _( "Minimum item volume: <neutral>%s</neutral>" ),
+                                          vol_to_string( data->min_item_volume ) ) );
     }
 
-    if (data->max_item_volume)
-    {
-        info.emplace_back("DESCRIPTION",
-                          string_format(_("Maximum item volume: <neutral>%s</neutral>"),
-                                        vol_to_string(*data->max_item_volume)));
+    if( data->max_item_volume ) {
+        info.emplace_back( "DESCRIPTION",
+                           string_format( _( "Maximum item volume: <neutral>%s</neutral>" ),
+                                          vol_to_string( *data->max_item_volume ) ) );
     }
 
-    info.emplace_back("DESCRIPTION",
-                      string_format(_("Base moves to remove item: <neutral>%d</neutral>"),
-                                    data->moves));
-    if (data->rigid)
-    {
-        info.emplace_back("DESCRIPTION", _("This pocket is <info>rigid</info>."));
+    info.emplace_back( "DESCRIPTION",
+                       string_format( _( "Base moves to remove item: <neutral>%d</neutral>" ),
+                                      data->moves ) );
+    if( data->rigid ) {
+        info.emplace_back( "DESCRIPTION", _( "This pocket is <info>rigid</info>." ) );
     }
 
-    if (data->watertight)
-    {
-        info.emplace_back("DESCRIPTION",
-                          _("This pocket can <info>contain a liquid</info>."));
+    if( data->watertight ) {
+        info.emplace_back( "DESCRIPTION",
+                           _( "This pocket can <info>contain a liquid</info>." ) );
     }
-    if (data->airtight)
-    {
-        info.emplace_back("DESCRIPTION",
-                          _("This pocket can <info>contain a gas</info>."));
+    if( data->airtight ) {
+        info.emplace_back( "DESCRIPTION",
+                           _( "This pocket can <info>contain a gas</info>." ) );
     }
-    if (will_spill())
-    {
-        info.emplace_back("DESCRIPTION",
-                          _("This pocket will <bad>spill</bad> if placed into another item or worn."));
+    if( will_spill() ) {
+        info.emplace_back( "DESCRIPTION",
+                           _( "This pocket will <bad>spill</bad> if placed into another item or worn." ) );
     }
-    if (data->fire_protection)
-    {
-        info.emplace_back("DESCRIPTION",
-                          _("This pocket <info>protects its contents from fire</info>."));
+    if( data->fire_protection ) {
+        info.emplace_back( "DESCRIPTION",
+                           _( "This pocket <info>protects its contents from fire</info>." ) );
     }
-    if (spoil_multiplier() != 1.0f)
-    {
-        if (spoil_multiplier() != 0.0f)
-        {
-            info.emplace_back("DESCRIPTION",
-                              string_format(_("Contained items spoil at <neutral>%.0f%%</neutral> their original rate."),
-                                            spoil_multiplier() * 100));
-        }
-        else
-        {
-            info.emplace_back("DESCRIPTION", "Contained items <info>won't spoil</info>.");
+    if( spoil_multiplier() != 1.0f ) {
+        if( spoil_multiplier() != 0.0f ) {
+            info.emplace_back( "DESCRIPTION",
+                               string_format( _( "Contained items spoil at <neutral>%.0f%%</neutral> their original rate." ),
+                                              spoil_multiplier() * 100 ) );
+        } else {
+            info.emplace_back( "DESCRIPTION", _( "Contained items <info>won't spoil</info>." ) );
         }
     }
     if (data->weight_multiplier != 1.0f)

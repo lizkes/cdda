@@ -991,13 +991,10 @@ void Character::suffer_from_sunburn()
     {
         add_msg_if_player(m_bad, _("%s your eyes."), sunlight_effect);
         // Pain (1/60) or loss of focus (59/60)
-        if (one_turn_in(1_minutes))
-        {
-            mod_pain(1);
-        }
-        else
-        {
-            focus_pool--;
+        if( one_turn_in( 1_minutes ) ) {
+            mod_pain( 1 );
+        } else {
+            mod_focus( -1 );
         }
     }
     // Umbrellas can keep the sun off the skin
@@ -1114,13 +1111,10 @@ void Character::suffer_from_sunburn()
     else
     {
         // Albinism/datura causes pain (1/60) or focus loss (59/60)
-        if (one_turn_in(1_minutes))
-        {
-            mod_pain(1);
-        }
-        else
-        {
-            focus_pool--;
+        if( one_turn_in( 1_minutes ) ) {
+            mod_pain( 1 );
+        } else {
+            mod_focus( -1 );
         }
     }
 }

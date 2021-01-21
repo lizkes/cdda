@@ -109,11 +109,11 @@ int butcher_time_to_cut(const player &u, const item &corpse_item, butcher_type a
 void activity_on_turn_drop();
 void activity_on_turn_move_loot(player_activity &act, player &p);
 //return true if there is an activity that can be done potentially, return false if no work can be found.
-bool generic_multi_activity_handler(player_activity &act, player &p, bool check_only = false);
-void activity_on_turn_fetch(player_activity &, player *p);
-void activity_on_turn_wear(player_activity &act, player &p);
-int get_auto_consume_moves(player &p, bool food);
-void try_fuel_fire(player_activity &act, player &p, bool starting_fire = false);
+bool generic_multi_activity_handler( player_activity &act, player &p, bool check_only = false );
+void activity_on_turn_fetch( player_activity &, player *p );
+void activity_on_turn_wear( player_activity &act, player &p );
+int get_auto_consume_moves( player &p, bool food );
+bool try_fuel_fire( player_activity &act, player &p, bool starting_fire = false );
 
 enum class item_drop_reason : int
 {

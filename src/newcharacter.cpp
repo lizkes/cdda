@@ -4033,9 +4033,8 @@ void Character::clear_mutations()
 
 void Character::empty_skills()
 {
-    for (auto &sk : *_skills)
-    {
-        sk.second.level(0);
+    for( auto &sk : *_skills ) {
+        sk.second = SkillLevel();
     }
 }
 
