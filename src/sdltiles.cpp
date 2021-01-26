@@ -1991,11 +1991,11 @@ void update_finger_repeat_delay()
                                        longest_window_edge ) ) /
                             std::max( 0.01f, ( get_option<float>( "ANDROID_REPEAT_DELAY_RANGE" ) ) * longest_window_edge ),
                             0.0f, 1.0f );
-    float repeat_delay_min = static_cast<float>( get_option<int>( "ANDROID_REPEAT_DELAY_MIN" ) );
-    float repeat_delay_max = static_cast<float>( get_option<int>( "ANDROID_REPEAT_DELAY_MAX" ) );
-    finger_repeat_delay = lerp<float>( std::max( repeat_delay_min, repeat_delay_max ),
-                                       std::min( repeat_delay_min, repeat_delay_max ),
-                                       std::pow( t, get_option<float>( "ANDROID_SENSITIVITY_POWER" ) ) );
+    int repeat_delay_min = get_option<int>( "ANDROID_REPEAT_DELAY_MIN" );
+    int repeat_delay_max = get_option<int>( "ANDROID_REPEAT_DELAY_MAX" );
+    finger_repeat_delay = lerp<uint32_t>( static_cast<uint32_t>( std::max( repeat_delay_min, repeat_delay_max ) ),
+                                          static_cast<uint32_t>( std::min( repeat_delay_min, repeat_delay_max ) ),
+                                          std::pow( t, get_option<float>( "ANDROID_SENSITIVITY_POWER" ) ) );
 }
 
 // TODO: Is there a better way to detect when string entry is allowed?
