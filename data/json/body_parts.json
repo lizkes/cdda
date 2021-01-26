@@ -24,7 +24,7 @@
     "base_hp": 60,
     "drench_capacity": 40,
     "smash_message": "You smash the %s with a powerful shoulder-check.",
-    "bionic_slots": 80
+    "bionic_slots": 999
   },
   {
     "id": "head",
@@ -52,7 +52,7 @@
     "drench_capacity": 7,
     "smash_message": "You smash the %s with a firm headbutt.",
     "smash_efficiency": 0.25,
-    "bionic_slots": 18
+    "bionic_slots": 999
   },
   {
     "id": "eyes",
@@ -76,7 +76,7 @@
     "flags": [ "IGNORE_TEMP" ],
     "smash_message": "You use your flippin' face to smash the %s.  EXTREME.",
     "smash_efficiency": 0.25,
-    "bionic_slots": 4
+    "bionic_slots": 999
   },
   {
     "id": "mouth",
@@ -101,7 +101,7 @@
     "drench_capacity": 1,
     "smash_message": "You use your flippin' face to smash the %s.  EXTREME.",
     "smash_efficiency": 0.25,
-    "bionic_slots": 4
+    "bionic_slots": 999
   },
   {
     "id": "arm_l",
@@ -131,7 +131,7 @@
     "base_hp": 60,
     "drench_capacity": 10,
     "smash_message": "You elbow-smash the %s.",
-    "bionic_slots": 20
+    "bionic_slots": 999
   },
   {
     "id": "arm_r",
@@ -160,7 +160,7 @@
     "base_hp": 60,
     "drench_capacity": 10,
     "smash_message": "You elbow-smash the %s.",
-    "bionic_slots": 20
+    "bionic_slots": 999
   },
   {
     "id": "hand_l",
@@ -187,7 +187,7 @@
     "base_hp": 60,
     "drench_capacity": 3,
     "smash_message": "You smash the %s with your fist.",
-    "bionic_slots": 5
+    "bionic_slots": 999
   },
   {
     "id": "hand_r",
@@ -214,7 +214,7 @@
     "base_hp": 60,
     "drench_capacity": 3,
     "smash_message": "You smash the %s with your fist.",
-    "bionic_slots": 5
+    "bionic_slots": 999
   },
   {
     "id": "leg_l",
@@ -244,7 +244,7 @@
     "base_hp": 60,
     "drench_capacity": 11,
     "smash_message": "You bring your knee down on the %s, smashing it.",
-    "bionic_slots": 30
+    "bionic_slots": 999
   },
   {
     "id": "leg_r",
@@ -274,7 +274,7 @@
     "base_hp": 60,
     "drench_capacity": 11,
     "smash_message": "You bring your knee down on the %s, smashing it.",
-    "bionic_slots": 30
+    "bionic_slots": 999
   },
   {
     "id": "foot_l",
@@ -301,7 +301,7 @@
     "base_hp": 60,
     "drench_capacity": 3,
     "smash_message": "You kick down the %s, smashing it.",
-    "bionic_slots": 7
+    "bionic_slots": 999
   },
   {
     "id": "foot_r",
@@ -328,6 +328,6 @@
     "base_hp": 60,
     "drench_capacity": 3,
     "smash_message": "You kick down the %s, smashing it.",
-    "bionic_slots": 7
+    "bionic_slots": 999
   }
 ]

@@ -17,7 +17,7 @@
     "description": "Installed on your body is a set of small retractable wind turbines.  When activated, they will deploy and slowly harvest wind power to recharge your power level.",
     "occupied_bodyparts": [ [ "torso", 10 ] ],
     "fuel_options": [ "wind" ],
-    "fuel_efficiency": 0.25,
+    "fuel_efficiency": 0.75,
     "time": 1,
     "flags": [ "BIONIC_POWER_SOURCE", "BIONIC_TOGGLED" ]
   },
