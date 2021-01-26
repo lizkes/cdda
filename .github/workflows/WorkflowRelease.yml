@@ -1,0 +1,39 @@
+name: WorkflowRelease
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "release version"
+                required: true
+                default: "unkown"
+jobs:
+    WorkflowRelease:
+        name: WorkflowRelease
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Install android sdk
+              run: sudo bash install_sdk.sh
+              working-directory: ./android
+            - name: Build
+              run: sudo bash build.sh ${{ github.event.inputs.version }}
+              working-directory: ./android
+            - name: Upload arm32
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: ./android/cdda-lizkes-${{ github.event.inputs.version }}-pure-arm32.apk
+                  asset_name: cdda-android-${{ github.event.inputs.version }}-pure-arm32.apk
+                  tag: ${{ github.event.inputs.version }}
+                  overwrite: true
+                  prerelease: true
+            - name: Upload arm64
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: ./android/cdda-lizkes-${{ github.event.inputs.version }}-pure-arm64.apk
+                  asset_name: cdda-android-${{ github.event.inputs.version }}-pure-arm64.apk
+                  tag: ${{ github.event.inputs.version }}
+                  overwrite: true
+                  prerelease: true

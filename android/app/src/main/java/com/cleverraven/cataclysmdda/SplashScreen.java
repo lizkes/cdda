@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package com.lizkes.cataclysmdda;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,8 +27,9 @@ public class SplashScreen extends Activity {
     private static final String TAG = "Splash";
     private static final int INSTALL_DIALOG_ID = 0;
     private ProgressDialog installDialog;
+    private AlertDialog lizkesAlert;
 
-    public CharSequence[] mSettingsNames = { "Software rendering", "Force fullscreen", "Trap Back button" };
+    public CharSequence[] mSettingsNames = { "软件渲染", "强制全屏", "捕获返回按钮" };
     public boolean[] mSettingsValues = { false, false, true };
 
     private String getVersionName() {
@@ -47,13 +48,24 @@ public class SplashScreen extends Activity {
         Log.e(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
-        // Start the game if already installed, otherwise start installing...
-        if (getVersionName().equals(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("installed", ""))) {
-            startGameActivity(false);
-        }
-        else {
-            new InstallProgramTask().execute();
-        }
+        lizkesAlert = new AlertDialog.Builder(SplashScreen.this)
+            .setTitle("食用前说明")
+            .setMessage("本版本是由lizkes基于官方实验版编译而成，同时修复了一些bug，整合了UndeadPeople贴图包和Otopack音效包\n如果发现bug请联系我的QQ：874654984\n点击了解按钮后请稍等片刻...")
+            .setCancelable(false)
+            .setPositiveButton("了解", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // Start the game if already installed, otherwise start installing...
+                    if (getVersionName().equals(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString("installed", ""))) {
+                        startGameActivity(false);
+                    }
+                    else {
+                        new InstallProgramTask().execute();
+                    }
+                    return;
+                }
+            }).create();
+
+        lizkesAlert.show();
     }
 
     @Override
@@ -115,7 +127,7 @@ public class SplashScreen extends Activity {
         @Override
         protected void onPreExecute() {
             installationAlert = new AlertDialog.Builder(SplashScreen.this)
-                .setTitle("Installation Failed")
+                .setTitle("安装失败")
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -127,7 +139,8 @@ public class SplashScreen extends Activity {
             try {
                 totalFiles = countTotalAssets(assetManager, "data") +
                     countTotalAssets(assetManager, "gfx") +
-                    countTotalAssets(assetManager, "lang");
+                    countTotalAssets(assetManager, "lang") +
+                    countTotalAssets(assetManager, "config");
                 showDialog(INSTALL_DIALOG_ID);
             } catch(Exception e) {
                 installationAlert.setMessage(e.getMessage());
@@ -146,14 +159,14 @@ public class SplashScreen extends Activity {
                 }).create();
 
             settingsAlert = new AlertDialog.Builder(SplashScreen.this)
-                .setTitle("Settings")
+                .setTitle("设置")
                 .setMultiChoiceItems(SplashScreen.this.mSettingsNames, SplashScreen.this.mSettingsValues, new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                         SplashScreen.this.mSettingsValues[which] = isChecked;
                     }})
                 .setCancelable(false)
-                .setPositiveButton("Start game", new DialogInterface.OnClickListener() {
+                .setPositiveButton("开始游戏", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         for (int i = 0; i < mSettingsNames.length; ++i)
                             PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putBoolean(SplashScreen.this.mSettingsNames[i].toString(), SplashScreen.this.mSettingsValues[i]).commit();
@@ -161,7 +174,7 @@ public class SplashScreen extends Activity {
                         return;
                     }
                 })
-                .setNeutralButton("Show help", new DialogInterface.OnClickListener() {
+                .setNeutralButton("查看帮助", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         helpAlert.show();
                         return;
@@ -190,6 +203,7 @@ public class SplashScreen extends Activity {
                 copyAssetFolder(assetManager, "data", externalFilesDir + "/data");
                 copyAssetFolder(assetManager, "gfx", externalFilesDir + "/gfx");
                 copyAssetFolder(assetManager, "lang", externalFilesDir + "/lang");
+                copyAssetFolder(assetManager, "config", externalFilesDir + "/config");
             } catch(Exception e) {
                 installationAlert.setMessage(e.getMessage());
                 return false;

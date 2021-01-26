@@ -1,4 +1,4 @@
-package com.cleverraven.cataclysmdda;
+package com.lizkes.cataclysmdda;
 
 import org.libsdl.app.SDLActivity;
 

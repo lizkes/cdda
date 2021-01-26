@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="installTitle">Installing game data...</string>
-    <string name="upgradeTitle">Upgrading game data...</string>
-    <string name="helpTitle">Help &amp; Controls</string>
-    <string name="helpMessage">"Swipe" for directional movement (hold for virtual joystick). "Tap" to confirm selection in menu or Pause one turn in-game (hold to Pause several turns in-game). "Double tap" to cancel or go back in menus (works like Escape key). "Pinch" to zoom in/out (in-game). Use hardware "Back" button to toggle virtual keyboard (hold to toggle keyboard shortcuts).</string>
+    <string name="installTitle">正在加载游戏数据中...</string>
+    <string name="upgradeTitle">正在升级游戏数据中...</string>
+    <string name="helpTitle">帮助 &amp; 基本控制</string>
+    <string name="helpMessage">在屏幕上滑动来控制方向。 轻按屏幕来确认选中项或在游戏中跳过一回合，按住不放来跳过多个回合。 双击屏幕可取消或在菜单中返回（类似于电脑端的ESC键）。 捏住屏幕来在游戏中放大缩小视角。按实体“返回”键来唤出虚拟键盘（按住可显示/隐藏左下角快捷键盘）。</string>
 </resources>

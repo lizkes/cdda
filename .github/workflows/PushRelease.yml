@@ -1,0 +1,39 @@
+name: PushRelease
+on:
+    push:
+        branches:
+            - android-pure
+jobs:
+    PushRelease:
+        name: PushRelease
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Read VERSION file
+              id: get_version
+              run: echo "::set-output name=version::$(cat VERSION)"
+            - name: Install android sdk
+              run: sudo bash install_sdk.sh
+              working-directory: ./android
+            - name: Build
+              run: sudo bash build.sh ${{ steps.get_version.outputs.version }}
+              working-directory: ./android
+            - name: Upload arm32
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: ./android/cdda-lizkes-${{ steps.get_version.outputs.version }}-pure-arm32.apk
+                  asset_name: cdda-android-${{ steps.get_version.outputs.version }}-pure-arm32.apk
+                  tag: ${{ steps.get_version.outputs.version }}
+                  overwrite: true
+                  prerelease: true
+            - name: Upload arm64
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: ./android/cdda-lizkes-${{ steps.get_version.outputs.version }}-pure-arm64.apk
+                  asset_name: cdda-android-${{ steps.get_version.outputs.version }}-pure-arm64.apk
+                  tag: ${{ steps.get_version.outputs.version }}
+                  overwrite: true
+                  prerelease: true
