@@ -1,0 +1,30 @@
+name: PushRelease
+on:
+    push:
+        branches:
+            - win-pure
+jobs:
+    PushRelease:
+        name: PushRelease
+        runs-on: ubuntu-20.04
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Read VERSION file
+              id: get_version
+              run: echo "::set-output name=version::$(cat VERSION)"
+            - name: Install MXE
+              run: sudo bash install_mxe.sh
+              working-directory: ./win64
+            - name: Build
+              run: sudo bash build.sh ${{ steps.get_version.outputs.version }}
+              working-directory: ./win64
+            - name: Upload
+              uses: svenstaro/upload-release-action@v2
+              with:
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  file: ./win64/cdda-lizkes-${{ steps.get_version.outputs.version }}-pure.7z
+                  asset_name: cdda-windows-${{ steps.get_version.outputs.version }}-pure-x64.7z
+                  tag: ${{ steps.get_version.outputs.version }}
+                  overwrite: true
+                  prerelease: true
