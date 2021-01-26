@@ -23,8 +23,8 @@ jobs:
               uses: svenstaro/upload-release-action@v2
               with:
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
-                  file: ./win64/cdda-lizkes-${{ github.event.inputs.version }}-pure.7z
-                  asset_name: cdda-windows-${{ github.event.inputs.version }}-pure-x64.7z
+                  file: ./win64/cdda-lizkes-${{ github.event.inputs.version }}-custom.7z
+                  asset_name: cdda-windows-${{ github.event.inputs.version }}-custom-x64.7z
                   tag: ${{ github.event.inputs.version }}
                   overwrite: true
                   prerelease: true
