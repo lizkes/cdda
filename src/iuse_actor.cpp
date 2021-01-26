@@ -3366,7 +3366,8 @@ int heal_actor::finish_using( player &healer, player &patient, item &it, bodypar
     }
     practice_amount = std::max( 9.0f, practice_amount );
 
-    healer.practice( skill_firstaid, static_cast<int>( practice_amount ) );
+    // healer.practice( skill_firstaid, static_cast<int>( practice_amount ) );
+    healer.practice( skill_firstaid, static_cast<int>( practice_amount ) * 2 ); //change by lizkes
     return it.type->charges_to_use();
 }
 

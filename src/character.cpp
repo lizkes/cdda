@@ -1378,7 +1378,8 @@ void Character::on_dodge( Creature *source, float difficulty )
 
     // Even if we are not to train still call practice to prevent skill rust
     difficulty = std::max( difficulty, 0.0f );
-    practice( skill_dodge, difficulty * 2, difficulty );
+    // practice( skill_dodge, difficulty * 2, difficulty );
+    practice(skill_dodge, static_cast<int>(difficulty) * 3, static_cast<int>(difficulty * 1.5f)); //change by lizkes
 
     martial_arts_data->ma_ondodge_effects( *this );
 

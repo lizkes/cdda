@@ -573,7 +573,8 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
 
         // Practice melee and relevant weapon skill (if any) except when using CQB bionic
         if( !has_active_bionic( bio_cqb ) ) {
-            melee_train( *this, 2, 5, *cur_weapon );
+            // melee_train( *this, 2, 5, *cur_weapon );
+            melee_train( *this, 2, 14, *cur_weapon ); //change by lizkes
         }
 
         // Cap stumble penalty, heavy weapons are quite weak already
@@ -681,7 +682,8 @@ bool Character::melee_attack_abstract( Creature &t, bool allow_special,
 
             // Practice melee and relevant weapon skill (if any) except when using CQB bionic
             if( !has_active_bionic( bio_cqb ) && cur_weapon ) {
-                melee_train( *this, 5, 10, *cur_weapon );
+                // melee_train( *this, 5, 10, *cur_weapon );
+                melee_train( *this, 5, 29, *cur_weapon ); //change by lizkes
             }
 
             // Treat monster as seen if we see it before or after the attack

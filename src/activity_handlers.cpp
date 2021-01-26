@@ -1107,8 +1107,9 @@ static void butchery_drops_harvest( item *corpse_item, const mtype &mt, player &
     }
 
     if( action == butcher_type::DISSECT ) {
-        p.practice( skill_firstaid, std::max( 0, practice ), std::max( mt.size - creature_size::medium,
-                    0 ) + 4 );
+        // p.practice( skill_firstaid, std::max( 0, practice ), std::max( mt.size - creature_size::medium,
+        //             0 ) + 4 );
+        p.practice(skill_firstaid, std::max(0, practice), std::max(mt.size - creature_size::medium, 0) + 8); //change by lizkes
     } else {
         p.practice( skill_survival, std::max( 0, practice ), std::max( mt.size - creature_size::medium,
                     0 ) + 4 );
