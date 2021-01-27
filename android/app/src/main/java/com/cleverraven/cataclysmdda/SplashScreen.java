@@ -54,10 +54,9 @@ public class SplashScreen extends Activity {
         lizkesAlert = new AlertDialog.Builder(SplashScreen.this)
             .setTitle("食用前说明")
             .setMessage(Html.fromHtml(
-                "<p>本版本由<a href=\"https://qm.qq.com/cgi-bin/qm/qr?k=EZXK0iu_qMl-pEpqQW0KvpYB7xh9a3-p&noverify=0\">lizkes</a>基于官方实验版编译而成，如果发现任何Bug<a href=\"https://github.com/lizkes/cdda/issues\">欢迎反馈</a><p>"
-              + "<p>修复了一些官方的Bug，整合了<a href=\"https://github.com/SomeDeadGuy/UndeadPeopleTileset\">UndeadPeople贴图包</a>和<a href=\"https://discourse.cataclysmdda.org/t/soundpack-otopack/23190\">Otopack音效包</a></p>"
-              + "<p>如果想要安装MOD请放入/Android/data/com.lizkes.cataclysmdda.experimental/files/data/mods文件夹内</p>"
-              + "<p>点击了解按钮后请稍等片刻...</p>"
+                "本版本由<a href=\"https://qm.qq.com/cgi-bin/qm/qr?k=EZXK0iu_qMl-pEpqQW0KvpYB7xh9a3-p&noverify=0\">lizkes</a>基于<a href=\"https://github.com/CleverRaven/Cataclysm-DDA\">官方实验版</a>编译而成，如果发现任何Bug<a href=\"https://github.com/lizkes/cdda/issues\">欢迎反馈</a><br>"
+              + "修复了一些官方的Bug，整合了<a href=\"https://github.com/SomeDeadGuy/UndeadPeopleTileset\">UndeadPeople贴图包</a>和<a href=\"https://discourse.cataclysmdda.org/t/soundpack-otopack/23190\">Otopack音效包</a><br>"
+              + "点击了解按钮后请稍等片刻..."
             ))
             .setCancelable(false)
             .setPositiveButton("了解", new DialogInterface.OnClickListener() {
