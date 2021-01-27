@@ -428,7 +428,7 @@ BINDIST_EXTRAS += data config
 BINDIST    = $(BUILD_PREFIX)cdda-$(VERSION).tar.gz
 W32BINDIST = $(BUILD_PREFIX)cdda-$(VERSION).7z
 BINDIST_CMD    = tar --transform=s@^$(BINDIST_DIR)@cataclysmdda-$(VERSION)@ -czvf $(BINDIST) $(BINDIST_DIR)
-W32BINDIST_CMD = cd $(BINDIST_DIR) && rm -f ../../$(W32BINDIST) && 7z a -t7z -mx=9 -r  ../../$(W32BINDIST) * && cd $(BUILD_DIR)
+W32BINDIST_CMD = cd $(BINDIST_DIR) && rm -f ../../$(W32BINDIST) && mv cataclysm-tiles.exe 点我开始游戏.exe && 7z a -t7z -mx=9 -r  ../../$(W32BINDIST) * && cd $(BUILD_DIR)
 
 # Check if called without a special build target
 ifeq ($(NATIVE),)
