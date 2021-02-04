@@ -5212,7 +5212,7 @@ bool game::find_nearby_spawn_point( const Character &target, const mtype_id &mt,
     for( int attempts = 0; attempts < 15; attempts++ ) {
         target_point = target.pos() + tripoint( rng( -max_radius, max_radius ),
                                                 rng( -max_radius, max_radius ), 0 );
-        if( can_place_monster( mt->id, target_point ) &&
+        if( can_place_monster( monster( mt->id ), target_point ) &&
             get_map().is_outside( target_point ) &&
             rl_dist( target_point, get_player_character().pos() ) > min_radius ) {
             point = target_point;
@@ -5723,8 +5723,10 @@ void game::control_vehicle()
     if( veh ) {
         // If we reached here, we gained control of a vehicle.
         // Clear the map memory for the area covered by the vehicle to eliminate ghost vehicles.
+        // FIXME: change map memory to memorize all memorizable objects and only erase vehicle part memory.
         for( const tripoint &target : veh->get_points() ) {
             u.clear_memorized_tile( m.getabs( target ) );
+            m.set_memory_seen_cache_dirty( target );
         }
         veh->is_following = false;
         veh->is_patrolling = false;

@@ -3046,6 +3046,7 @@ void Character::handle_contents_changed( const std::vector<item_location> &conta
     class item_loc_with_depth
     {
         public:
+            // NOLINTNEXTLINE(google-explicit-constructor)
             item_loc_with_depth( const item_location &_loc )
                 : _loc( _loc ) {
                 item_location ancestor = _loc;
@@ -3515,7 +3516,7 @@ units::mass Character::weight_carried_with_tweaks( const std::vector<std::pair<i
     for( const std::pair<item_location, int> &location_pair : locations ) {
         dropping.emplace( location_pair.first.get_item(), location_pair.second );
     }
-    return weight_carried_with_tweaks( { dropping } );
+    return weight_carried_with_tweaks( item_tweaks( { dropping } ) );
 }
 
 units::mass Character::weight_carried_with_tweaks( const item_tweaks &tweaks ) const
@@ -3585,7 +3586,7 @@ units::volume Character::volume_carried_with_tweaks( const
     for( const std::pair<item_location, int> &location_pair : locations ) {
         dropping.emplace( location_pair.first.get_item(), location_pair.second );
     }
-    return volume_carried_with_tweaks( { dropping } );
+    return volume_carried_with_tweaks( item_tweaks( { dropping } ) );
 }
 
 units::volume Character::volume_carried_with_tweaks( const item_tweaks &tweaks ) const
@@ -10577,7 +10578,7 @@ units::volume Character::volume_capacity_with_tweaks( const
     for( const std::pair<item_location, int> &location_pair : locations ) {
         dropping.emplace( location_pair.first.get_item(), location_pair.second );
     }
-    return volume_capacity_with_tweaks( { dropping } );
+    return volume_capacity_with_tweaks( item_tweaks( { dropping } ) );
 }
 
 units::volume Character::volume_capacity_with_tweaks( const item_tweaks &tweaks ) const
