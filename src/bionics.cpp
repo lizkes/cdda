@@ -838,7 +838,7 @@ bool Character::activate_bionic( int b, bool eff_only, bool *close_bionics_ui )
     } else if( bio.id == bio_magnet ) {
         add_msg_activate();
         static const std::set<material_id> affected_materials =
-        { material_id( "iron" ), material_id( "steel" ) };
+        { material_id( "iron" ), material_id( "steel" ), material_id( "hardsteel" ), material_id( "budget_steel" ) };
         // Remember all items that will be affected, then affect them
         // Don't "snowball" by affecting some items multiple times
         std::vector<std::pair<item, tripoint>> affected;
@@ -880,7 +880,8 @@ bool Character::activate_bionic( int b, bool eff_only, bool *close_bionics_ui )
         cata::optional<tripoint> target = lockpick_activity_actor::select_location( player_character );
         if( target.has_value() ) {
             add_msg_activate();
-            assign_activity( lockpick_activity_actor::use_bionic( here.getabs( *target ) ) );
+            assign_activity(
+                player_activity( lockpick_activity_actor::use_bionic( here.getabs( *target ) ) ) );
             if( close_bionics_ui ) {
                 *close_bionics_ui = true;
             }
