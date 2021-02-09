@@ -1775,9 +1775,9 @@ bool cata_tiles::draw_from_id_string( const std::string &id, TILE_CATEGORY categ
             }
         } else if( category == C_FIELD ) {
             const field_type_id fid = field_type_id( found_id );
-            sym = fid.obj().get_codepoint();
+            sym = fid->get_intensity_level().symbol;
             // TODO: field intensity?
-            col = fid.obj().get_color();
+            col = fid->get_intensity_level().color;
         } else if( category == C_TRAP ) {
             const trap_str_id tmp( found_id );
             if( tmp.is_valid() ) {
@@ -3425,16 +3425,19 @@ void cata_tiles::draw_custom_explosion_frame()
         }
 
         const tripoint &p = pr.first;
-        if( col == c_red ) {
-            draw_from_id_string( exp_strong, p, subtile, rotation, lit_level::LIT,
-                                 nv_goggles_activated );
+        std::string explosion_tile_id;
+        if( pr.second.tile_name && find_tile_looks_like( *pr.second.tile_name, TILE_CATEGORY::C_NONE ) ) {
+            explosion_tile_id = *pr.second.tile_name;
+        } else if( col == c_red ) {
+            explosion_tile_id = exp_strong;
         } else if( col == c_yellow ) {
-            draw_from_id_string( exp_medium, p, subtile, rotation, lit_level::LIT,
-                                 nv_goggles_activated );
+            explosion_tile_id = exp_medium;
         } else {
-            draw_from_id_string( exp_weak, p, subtile, rotation, lit_level::LIT,
-                                 nv_goggles_activated );
+            explosion_tile_id = exp_weak;
         }
+
+        draw_from_id_string( explosion_tile_id, p, subtile, rotation, lit_level::LIT,
+                             nv_goggles_activated );
     }
 }
 void cata_tiles::draw_bullet_frame()
@@ -3710,12 +3713,19 @@ void cata_tiles::get_tile_values( const int t, const int *tn, int &subtile, int 
 void cata_tiles::get_tile_values_with_ter( const tripoint &p, const int t, const int *tn,
         int &subtile, int &rotation )
 {
-    get_tile_values( t, tn, subtile, rotation );
+    map &here = get_map();
+    //check if furniture should connect to itself
+    if( here.has_flag( "NO_SELF_CONNECT", p ) || here.has_flag( "ALIGN_WORKBENCH", p ) ) {
+        //if we don't ever connect to ourself just return unconnected to be used further
+        get_rotation_and_subtile( 0, rotation, subtile );
+    } else {
+        //if we do connect to ourself (tables, counters etc.) calculate based on neighbours
+        get_tile_values( t, tn, subtile, rotation );
+    }
     // calculate rotation for unconnected tiles based on surrounding walls
     if( subtile == unconnected ) {
         int val = 0;
         bool use_furniture = false;
-        map &here = get_map();
 
         if( here.has_flag( "ALIGN_WORKBENCH", p ) ) {
             for( int i = 0; i < 4; ++i ) {
