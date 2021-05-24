@@ -25,7 +25,7 @@
       { "pocket_type": "CONTAINER", "max_contains_volume": "500 ml", "max_contains_weight": "2 kg", "moves": 80 }
     ],
     "warmth": 30,
-    "material_thickness": 1,
+    "material_thickness": 2,
     "valid_mods": [ "steel_padded" ],
     "environmental_protection": 6,
     "flags": [ "VARSIZE", "POCKETS", "STURDY", "WATERPROOF", "RAINPROOF", "OUTER" ]
@@ -1080,7 +1080,7 @@
     "encumbrance": 2,
     "warmth": 12,
     "material_thickness": 0.5,
-    "flags": [ "VARSIZE", "FANCY" ]
+    "flags": [ "VARSIZE", "FANCY", "OUTER" ]
   },
   {
     "id": "ski_jacket",

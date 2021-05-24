@@ -193,7 +193,6 @@ class computer;
 
 #define dbg(x) DebugLog((x),D_GAME) << __FILE__ << ":" << __LINE__ << ": "
 
-const int core_version = 6;
 static constexpr int DANGEROUS_PROXIMITY = 5;
 
 static const activity_id ACT_OPERATION( "ACT_OPERATION" );
@@ -264,6 +263,8 @@ static const trait_id trait_NPC_STARTING_NPC( "NPC_STARTING_NPC" );
 static const trap_str_id tr_unfinished_construction( "tr_unfinished_construction" );
 
 static const faction_id faction_your_followers( "your_followers" );
+
+static const flag_id json_flag_SPLINT( "SPLINT" );
 
 #if defined(__ANDROID__)
 extern std::map<std::string, std::list<input_event>> quick_shortcuts_map;
@@ -1673,12 +1674,6 @@ bool game::do_turn()
     // reset player noise
     u.volume = 0;
 
-    // This is a hack! Remove this when we have per-turn activity tracking
-    // This prevents the display from erroneously updating when we use more
-    // than our allotted moves in a single turn
-    if( u.moves < 0 ) {
-        u.increase_activity_level( NO_EXERCISE );
-    }
     return false;
 }
 
@@ -3069,19 +3064,6 @@ bool game::load_packs( const std::string &msg, const std::vector<mod_id> &packs,
     for( const auto &e : available ) {
         const MOD_INFORMATION &mod = *e;
         load_data_from_dir( mod.path, mod.ident.str(), ui );
-
-        // if mod specifies legacy migrations load any that are required
-        if( !mod.legacy.empty() ) {
-            static_popup popup;
-            for( int i = get_option<int>( "CORE_VERSION" ); i < core_version; ++i ) {
-                popup.message( _( "%s Applying legacy migration (%s %i/%i)" ),
-                               msg, e.c_str(), i, core_version - 1 );
-                ui_manager::redraw();
-                refresh_display();
-
-                load_data_from_dir( string_format( "%s/%i", mod.legacy.c_str(), i ), mod.ident.str(), ui );
-            }
-        }
 
         ui.proceed();
     }
@@ -5808,7 +5790,10 @@ bool game::npc_menu( npc &who )
                          0.0f, 0.0f );
     } else if( choice == use_item ) {
         static const std::string heal_string( "heal" );
-        const auto will_accept = []( const item & it ) {
+        const auto will_accept = [&who]( const item & it ) {
+            if( it.has_flag( json_flag_SPLINT ) && who.can_wear( it ).success() ) {
+                return true;
+            }
             const use_function *use_fun = it.get_use( heal_string );
             if( use_fun == nullptr ) {
                 return false;
@@ -5828,10 +5813,15 @@ bool game::npc_menu( npc &who )
             return false;
         }
         item &used = *loc;
-        bool did_use = u.invoke_item( &used, heal_string, who.pos() );
-        if( did_use ) {
-            // Note: exiting a body part selection menu counts as use here
-            u.mod_moves( -300 );
+        if( used.has_flag( json_flag_SPLINT ) ) {
+            std::string reason = _( "Nope." );
+            who.wear_if_wanted( used, reason );
+        } else {
+            bool did_use = u.invoke_item( &used, heal_string, who.pos() );
+            if( did_use ) {
+                // Note: exiting a body part selection menu counts as use here
+                u.mod_moves( -300 );
+            }
         }
     } else if( choice == sort_armor ) {
         who.sort_armor();
@@ -6060,7 +6050,7 @@ void game::examine( const tripoint &examp )
             return;
         } else {
             sounds::process_sound_markers( &u );
-            if( !u.is_mounted() ) {
+            if( !u.is_mounted() && !m.has_flag( "NO_PICKUP_ON_EXAMINE", examp ) ) {
                 Pickup::pick_up( examp, 0 );
             }
         }
@@ -9093,6 +9083,10 @@ void game::reload( item_location &loc, bool prompt, bool empty )
     bool use_loc = true;
     if( !it->has_flag( flag_ALLOWS_REMOTE_USE ) ) {
         it = loc.obtain( u ).get_item();
+        if( !it ) {
+            add_msg( _( "Never mind." ) );
+            return;
+        }
         use_loc = false;
     }
 
@@ -9977,23 +9971,32 @@ point game::place_player( const tripoint &dest_loc )
         // TODO: handling for ridden creatures other than players mount.
         if( !critter.has_effect( effect_ridden ) ) {
             if( u.is_mounted() ) {
-                std::vector<tripoint> valid;
+                std::vector<tripoint> maybe_valid;
                 for( const tripoint &jk : m.points_in_radius( critter.pos(), 1 ) ) {
                     if( is_empty( jk ) ) {
-                        valid.push_back( jk );
+                        maybe_valid.push_back( jk );
                     }
                 }
-                if( !valid.empty() ) {
-                    critter.move_to( random_entry( valid ) );
-                    add_msg( _( "You push the %s out of the way." ), critter.name() );
-                } else {
+                bool moved = false;
+                while( !maybe_valid.empty() ) {
+                    if( critter.move_to( random_entry_removed( maybe_valid ) ) ) {
+                        add_msg( _( "You push the %s out of the way." ), critter.name() );
+                        moved = true;
+                    }
+                }
+                if( !moved ) {
                     add_msg( _( "There is no room to push the %s out of the way." ), critter.name() );
                     return u.pos().xy();
                 }
             } else {
-                critter.move_to( u.pos(), false,
-                                 true ); // Force the movement even though the player is there right now.
-                add_msg( _( "You displace the %s." ), critter.name() );
+                // Force the movement even though the player is there right now.
+                const bool moved = critter.move_to( u.pos(), /*force=*/false, /*step_on_critter=*/true );
+                if( moved ) {
+                    add_msg( _( "You displace the %s." ), critter.name() );
+                } else {
+                    add_msg( _( "You cannot move the %s out of the way." ), critter.name() );
+                    return u.pos().xy();
+                }
             }
         } else if( !u.has_effect( effect_riding ) ) {
             add_msg( _( "You cannot move the %s out of the way." ), critter.name() );
@@ -10374,7 +10377,6 @@ int game::grabbed_furn_move_time( const tripoint &dp )
                              m.furn( fpos ).obj().has_flag( "FIRE_CONTAINER" ) ||
                              m.furn( fpos ).obj().has_flag( "SEALED" );
 
-
     int str_req = furntype.move_str_req;
     // Factor in weight of items contained in the furniture.
     units::mass furniture_contents_weight = 0_gram;
@@ -10448,8 +10450,8 @@ bool game::grabbed_furn_move( const tripoint &dp )
 
     const bool dst_item_ok = !m.has_flag( "NOITEM", fdest ) &&
                              !m.has_flag( "SWIMMABLE", fdest ) &&
-                             !m.has_flag( "DESTROY_ITEM", fdest ) &&
-                             only_liquid_items;
+                             !m.has_flag( "DESTROY_ITEM", fdest );
+
     const bool src_item_ok = m.furn( fpos ).obj().has_flag( "CONTAINER" ) ||
                              m.furn( fpos ).obj().has_flag( "FIRE_CONTAINER" ) ||
                              m.furn( fpos ).obj().has_flag( "SEALED" );
@@ -10476,7 +10478,7 @@ bool game::grabbed_furn_move( const tripoint &dp )
                  furntype.name() );
         u.mod_pain( 1 ); // Hurt ourselves.
         return true; // furniture and or obstacle wins.
-    } else if( !src_item_ok && !dst_item_ok && dst_items > 0 ) {
+    } else if( !src_item_ok && !only_liquid_items && dst_items > 0 ) {
         add_msg( _( "There's stuff in the way." ) );
         return true;
     }
@@ -10511,7 +10513,7 @@ bool game::grabbed_furn_move( const tripoint &dp )
 
     // Actually move the furniture.
     m.furn_set( fdest, m.furn( fpos ) );
-    m.furn_set( fpos, f_null );
+    m.furn_set( fpos, f_null, true );
 
     if( fire_intensity == 1 && !pulling_furniture ) {
         m.remove_field( fpos, fd_fire );
@@ -10542,6 +10544,14 @@ bool game::grabbed_furn_move( const tripoint &dp )
         } else {
             add_msg( _( "Stuff spills from the %s!" ), furntype.name() );
         }
+    }
+
+    if( !m.has_floor( fdest ) && !m.has_flag( "FLAT", fdest ) ) {
+        std::string danger_tile = enumerate_as_string( get_dangerous_tile( fdest ) );
+        add_msg( _( "You let go of the %1$s as it falls down the %2$s." ), furntype.name(), danger_tile );
+        u.grab( object_type::NONE );
+        m.drop_furniture( fdest );
+        return true;
     }
 
     if( shifting_furniture ) {
@@ -10942,6 +10952,7 @@ void game::vertical_move( int movez, bool force, bool peeking )
     }
 
     if( !u.move_effects( false ) ) {
+        u.moves -= 100;
         return;
     }
 
@@ -11536,8 +11547,8 @@ point game::update_map( int &x, int &y )
     // Shift NPCs
     for( auto it = active_npc.begin(); it != active_npc.end(); ) {
         ( *it )->shift( shift );
-        if( ( *it )->posx() < 0 - SEEX * 2 || ( *it )->posy() < 0 - SEEX * 2 ||
-            ( *it )->posx() > SEEX * ( MAPSIZE + 2 ) || ( *it )->posy() > SEEY * ( MAPSIZE + 2 ) ) {
+        if( ( *it )->posx() < 0 || ( *it )->posx() >= MAPSIZE_X ||
+            ( *it )->posy() < 0 || ( *it )->posy() >= MAPSIZE_Y ) {
             //Remove the npc from the active list. It remains in the overmap list.
             ( *it )->on_unload();
             it = active_npc.erase( it );
@@ -12220,9 +12231,17 @@ void game::start_calendar()
                               + 1_hours * scen->initial_hour()
                               + 1_days * scen->initial_day()
                               + get_option<int>( "SEASON_LENGTH" ) * 1_days * scen->initial_season()
-                              + 4 * get_option<int>( "SEASON_LENGTH" ) * 1_days * ( scen->initial_year() - 1 )
-                              + 1_days * get_option<int>( "SPAWN_DELAY" );
+                              + 4 * get_option<int>( "SEASON_LENGTH" ) * 1_days * ( scen->initial_year() - 1 );
+    if( calendar::start_of_game < calendar::start_of_cataclysm ) {
+        // Hotfix to prevent game start  from occuring before the cataclysm.
+        // Should be replaced with full refactor of the start date
+        calendar::start_of_game = calendar::start_of_cataclysm
+                                  + 1_hours * scen->initial_hour();
+    }
+    calendar::start_of_game += 1_days * get_option<int>( "SPAWN_DELAY" );
     calendar::turn = calendar::start_of_game;
+    calendar::initial_season = static_cast<season_type>( ( to_days<int>( calendar::start_of_game -
+                               calendar::turn_zero ) / get_option<int>( "SEASON_LENGTH" ) ) % 4 );
 }
 
 overmap &game::get_cur_om() const

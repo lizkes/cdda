@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "activity_tracker.h"
 #include "activity_type.h"
 #include "bodypart.h"
 #include "calendar.h"
@@ -294,20 +295,6 @@ struct consumption_event {
     void deserialize( JsonIn &jsin );
 };
 
-struct weariness_tracker {
-    int tracker = 0;
-    int intake = 0;
-
-    // Semi-consecutive 5 minute ticks of low activity (or 2.5 if we're sleeping)
-    int low_activity_ticks = 0;
-    // How many ticks since we've decreased intake
-    int tick_counter = 0;
-
-    void clear();
-    void serialize( JsonOut &json ) const;
-    void deserialize( JsonIn &jsin );
-};
-
 inline social_modifiers operator+( social_modifiers lhs, const social_modifiers &rhs )
 {
     lhs += rhs;
@@ -489,7 +476,7 @@ class Character : public Creature, public visitable
         std::pair<std::string, nc_color> get_pain_description() const override;
 
         /** Modifiers for need values exclusive to characters */
-        virtual void mod_stored_kcal( int nkcal );
+        virtual void mod_stored_kcal( int nkcal, bool ignore_weariness = false );
         virtual void mod_stored_nutr( int nnutr );
         virtual void mod_hunger( int nhunger );
         virtual void mod_thirst( int nthirst );
@@ -507,7 +494,7 @@ class Character : public Creature, public visitable
     protected:
 
         // These accept values in calories, 1/1000s of kcals (or Calories)
-        virtual void mod_stored_calories( int ncal );
+        virtual void mod_stored_calories( int ncal, bool ignore_weariness = false );
         virtual void set_stored_calories( int cal );
 
     public:
@@ -645,7 +632,7 @@ class Character : public Creature, public visitable
         bool is_hibernating() const;
         /** Maintains body temperature */
         void update_bodytemp();
-
+        void update_frostbite( const bodypart_id &bp, int FBwindPower );
         /** Equalizes heat between body parts */
         void temp_equalizer( const bodypart_id &bp1, const bodypart_id &bp2 );
 
@@ -1404,9 +1391,10 @@ class Character : public Creature, public visitable
          * Returns true if it destroys the item. Consumes charges from the item.
          * Multi-use items are ONLY supported when all use_methods are iuse_actor!
          */
-        virtual bool invoke_item( item *, const tripoint &pt );
+        virtual bool invoke_item( item *, const tripoint &pt, int pre_obtain_moves = -1 );
         /** As above, but with a pre-selected method. Debugmsg if this item doesn't have this method. */
-        virtual bool invoke_item( item *, const std::string &, const tripoint &pt );
+        virtual bool invoke_item( item *, const std::string &, const tripoint &pt,
+                                  int pre_obtain_moves = -1 );
         /** As above two, but with position equal to current position */
         virtual bool invoke_item( item * );
         virtual bool invoke_item( item *, const std::string & );
@@ -2137,24 +2125,16 @@ class Character : public Creature, public visitable
         units::mass bodyweight() const;
         // returns total weight of installed bionics
         units::mass bionics_weight() const;
-        // increases the activity level to the next level
+        // increases the activity level to the specified level
         // does not decrease activity level
-        void increase_activity_level( float new_level );
-        // decreases the activity level to the previous level
+        void set_activity_level( float new_level );
+        // decreases activity level to the specified level
         // does not increase activity level
         void decrease_activity_level( float new_level );
         // sets activity level to NO_EXERCISE
         void reset_activity_level();
         // outputs player activity level to a printable string
         std::string activity_level_str() const;
-        // NOT SUITABLE FOR USE OTHER THAN DISPLAY
-        // The activity level this turn
-        float instantaneous_activity_level() const;
-        // Basically, advance this display one turn
-        void reset_activity_cursor();
-        // When we log an activity for metabolic purposes
-        // log it in our cursor too
-        void log_instant_activity( float );
 
         /** Returns overall bashing resistance for the body_part */
         int get_armor_bash( bodypart_id bp ) const override;
@@ -2394,12 +2374,12 @@ class Character : public Creature, public visitable
                 const nutrients *nutrient = nullptr ) const;
         /** Handles the effects of consuming an item */
         bool consume_effects( item &food );
-        /** Check character's capability of consumption overall */
+        /** Check whether the character can consume this very item */
+        bool can_consume_as_is( const item &it ) const;
+        /** Check whether the character can consume this item or any of its contents */
         bool can_consume( const item &it ) const;
         /** True if the character has enough skill (in cooking or survival) to estimate time to rot */
         bool can_estimate_rot() const;
-        /** Check whether character can consume this very item */
-        bool can_consume_as_is( const item &it ) const;
         /**
          * Returns a reference to the item itself (if it's consumable),
          * the first of its contents (if it's consumable) or null item otherwise.
@@ -2592,10 +2572,10 @@ class Character : public Creature, public visitable
         /**
          * Handle skill gain for player and followers during crafting
          * @param craft the currently in progress craft
-         * @param multiplier what factor to multiply the base skill gain by.  This is used to apply
+         * @param num_practice_ticks to trigger.  This is used to apply
          * multiple steps of incremental skill gain simultaneously if needed.
          */
-        void craft_skill_gain( const item &craft, const int &multiplier );
+        void craft_skill_gain( const item &craft, const int &num_practice_ticks );
         /**
          * Handle proficiency practice for player and followers while crafting
          * @param craft - the in progress craft
@@ -2718,9 +2698,10 @@ class Character : public Creature, public visitable
         int weary_threshold() const;
         int weariness() const;
         float activity_level() const;
+        float instantaneous_activity_level() const;
         float exertion_adjusted_move_multiplier( float level = -1.0f ) const;
-        void try_reduce_weariness( float exertion );
         float maximum_exertion_level() const;
+        std::string activity_level_str( float level ) const;
         std::string debug_weary_info() const;
         // returns empty because this is avatar specific
         void add_pain_msg( int, const bodypart_id & ) const {}
@@ -2781,7 +2762,6 @@ class Character : public Creature, public visitable
         int healthy = 0;
         int healthy_mod = 0;
 
-        weariness_tracker weary;
         // Our bmr at no activity level
         int base_bmr() const;
 
@@ -2793,11 +2773,7 @@ class Character : public Creature, public visitable
         creature_size size_class = creature_size::medium;
 
         // the player's activity level for metabolism calculations
-        float attempted_activity_level = NO_EXERCISE;
-        // Display purposes only - the highest activity this turn and last
-        float act_cursor = NO_EXERCISE;
-        float last_act = NO_EXERCISE;
-        time_point act_turn = calendar::turn_zero;
+        activity_tracker activity_history;
 
         trap_map known_traps;
         mutable std::map<std::string, double> cached_info;
